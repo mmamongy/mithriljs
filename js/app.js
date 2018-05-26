@@ -5,6 +5,32 @@ var Header = {
 } ;
  
 var SearchBar = {
+    controller: function(args){
+        // using ctrl
+        var ctrl = this ;
+        ctrl.searchKey = m.prop('');
+        ctrl.searchHandler = function(event){
+            ctrl.searchKey(event.target.value);
+            args.searchHandler(event.target.value);
+        };
+        /* using factory function: 
+        var search = m.prop('');
+        function searchHandler(e){ 
+            searchKey(e.target.value);
+            args.searchHandler(e.target.value);
+        }
+        return {
+            searchKey: searchKey,
+            searchHandler: searchHandler
+        }
+        using `this`
+        this.searchKey = m.prop('');
+        this.searchHandler = function (e) {
+            this.searchKey(e.target.value);
+            args.searchHandler(e.traget.value);
+        }.bind(this)
+        */
+    },
 	view: function () {
 		return m('input[type=search]');
 	}
