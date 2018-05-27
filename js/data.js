@@ -2,9 +2,9 @@ employeeService = (function(){
     var findById= function(id) {
         var deferred = m.deferred();
         var employee = null ; 
-        var l =  employee.length ;
+        var l =  employees.length ;
         for ( var i =0 ; i< l  ;i++) {
-            if(employee.id == id) {
+            if(employees[i].id == id) {
                 employee = employees[i];
                 break;
             }

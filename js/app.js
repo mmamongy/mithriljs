@@ -26,8 +26,7 @@ var EmployeeListItem = {
 	view: function(ctrl, args) {
 		return m('li', [
 			m('a', {
-				config: m.route,
-				href: '#employees/' + args.employee.id
+				href: window.location.href + 'employees/' + args.employee.id
 			}, [
 				m('span', args.employee.firstName),
 				m('span', args.employee.lastName)
@@ -73,4 +72,27 @@ var HomePage = {
 	}
 }
 
-m.mount(document.body, m.component(HomePage, {service: employeeService}));
+var EmployeePage =  {
+	controller: function(args){
+		var ctrl = this ;
+		ctrl.employee = m.prop({});
+		args.service.findById(m.route.param('Id')).then(function(result){
+			ctrl.employee(result)
+		})
+	},
+	view: function( ctrl, args){
+		return ('div',[
+			m.component(Header,{ text: 'Employee Details'}),
+			m('h3', ctrl.employee().firstName+ ' '  + ctrl.employee().lastName),
+			ctrl.employee().title
+			
+		])
+	}
+} ;
+
+m.route(document.body, '/',{
+	'/': m.component(HomePage,{service: employeeService}),
+	'/employees/:Id': m.component(EmployeePage, {service: employeeService})
+})
+
+// m.mount(document.body, m.component(HomePage, {service: employeeService}));
