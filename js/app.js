@@ -1,90 +1,76 @@
 var Header = {
-    view: function(ctrl , args) {
-        return m('h1.title',args.text);
-    }
-} ;
- 
+	view: function(ctrl, args) {
+		return m('h1.title', args.text);
+	}
+};
+
 var SearchBar = {
-    controller: function(args){
-        // using ctrl
-        var ctrl = this ;
-        ctrl.searchKey = m.prop('');
-        ctrl.searchHandler = function(event){
-            ctrl.searchKey(event.target.value);
-            args.searchHandler(event.target.value);
-        };
-        /* using factory function: 
-        var search = m.prop('');
-        function searchHandler(e){ 
-            searchKey(e.target.value);
-            args.searchHandler(e.target.value);
-        }
-        return {
-            searchKey: searchKey,
-            searchHandler: searchHandler
-        }
-        using `this`
-        this.searchKey = m.prop('');
-        this.searchHandler = function (e) {
-            this.searchKey(e.target.value);
-            args.searchHandler(e.traget.value);
-        }.bind(this)
-        */
-    },
-	view: function () {
-		return m('input[type=search]');
+	controller: function(args) {
+		var ctrl = this;
+		ctrl.searchKey = m.prop('');
+		ctrl.searchHandler = function(event) {
+			var searchKey = event.target.value; 
+			ctrl.searchKey(searchKey);
+			args.searchHandler(searchKey);
+		};
+	},
+	view: function(ctrl) {
+		return m('input[type=search]', {
+			value: ctrl.searchKey(),
+			oninput: ctrl.searchHandler
+		});
 	}
 };
 
 var EmployeeListItem = {
-    view: function( ctrl , args) {
-        return m ('li',[
-            m('a',{
-                href: '#employees/' + args.employee.id
-            },[
-                m('span', args.employee.firstName),
-                m('span', args.employee.lastName)
-            ])
-        ])
-    }
-} ;
-
-var EmployeeList = { 
-    view: function(ctrl, args) {
-        var items = args.employees.map(function(employee, id){
-            return m.component(EmployeeListItem, {
-                key: employee.id,
-                employee: employee
-            });
-        })
-        return m('ul', items) ;
-    }
+	view: function(ctrl, args) {
+		return m('li', [
+			m('a', {
+				config: m.route,
+				href: '#employees/' + args.employee.id
+			}, [
+				m('span', args.employee.firstName),
+				m('span', args.employee.lastName)
+			])
+		])
+	}
 };
 
-var employees = [{
-    firstName:'Leo',
-    lastName: 'Horie'
-},
-{
-    firstName:'Barney',
-    lastName: 'Carrol'
-},
-{
-    firstName:'Stphen',
-    lastName: 'Hoyer'
-}]
-
-var HomePage = { 
-    view: function() {
-        return m('div',[
-            m.component(Header, {text: ' Employee Dictionary'}),
-            m.component(SearchBar) ,
-            m.component(EmployeeList, 
-            {
-                employees : employees
-            })
-        ])
-    }
+var EmployeeList = {
+	view: function(ctrl, args) {
+		var items = args.employees.map(function(employee) {
+			return m.component(EmployeeListItem, {
+				key: employee.id,
+				employee: employee
+			})
+		})
+		return m('ul', items);
+	}
 }
 
-m.mount( document.body , HomePage);
+var HomePage = {
+	controller: function (args) {
+		var ctrl = this;
+		ctrl.employees = m.prop([]);
+		ctrl.searchHandler = function (key) {
+			args.service.findByName(key).then(function (result) {
+				// ctrl.searchKey(key); <--- see line 58 of https://github.com/ccoenraets/react-employee-directory/blob/master/iteration4/js/app.js
+				ctrl.employees(result);
+			})
+		}
+
+	},
+	view: function(ctrl, args) {
+		return m('div', [
+			m.component(Header, {
+				text: 'Employee Directory'
+			}),
+			m.component(SearchBar, {searchHandler: ctrl.searchHandler}),
+			m.component(EmployeeList, {
+				employees: ctrl.employees()
+			})
+		])
+	}
+}
+
+m.mount(document.body, m.component(HomePage, {service: employeeService}));
